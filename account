@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gocekan TikTok with Notifications</title>
+<style>
+  /* Basic reset and font */
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9f9f9;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Container for slides */
+  .slider {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 2rem;
+    color: #222;
+    background: #f9f9f9;
+    user-select: none;
+    transition: transform 0.5s ease;
+  }
+
+  .slide.hidden {
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  /* Slide 1 style */
+  #slide1 {
+    background: #69c9d0;
+    color: white;
+  }
+
+  /* Slide 2 style */
+  #slide2 {
+    background: #222;
+    color: white;
+  }
+
+  /* Moving text on slide 2 */
+  #move-text {
+    position: absolute;
+    padding: 18px 30px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    user-select: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    background: #69c9d0;
+    color: #222;
+    transition: top 0.3s ease, left 0.3s ease;
+    max-width: 90vw;
+    text-align: center;
+  }
+
+  /* Back button on slide 2 */
+  #back-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #69c9d0;
+    color: #222;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 3px 7px rgba(0,0,0,0.3);
+    user-select: none;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+  }
+  #back-btn:hover {
+    background: #4aaabf;
+  }
+
+  /* Notification modal 1 */
+  #notification-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 280px;
+    padding: 25px 20px 60px 20px;
+    background: #ff4c4c;
+    border-radius: 12px;
+    box-shadow: 0 4px 22px rgba(0,0,0,0.3);
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-align: center;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    display: none;
+    z-index: 2000;
+  }
+
+  /* Close button inside notification 1 */
+  #close-notif-btn {
+    position: absolute;
+    background: white;
+    color: #ff4c4c;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: none;
+    padding: 6px 15px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+  }
+  #close-notif-btn:hover {
+    background: #f8f8f8;
+  }
+
+  /* Notification modal 2 */
+  #notification-modal-2 {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 280px;
+    padding: 25px 20px 60px 20px;
+    background: #3333cc;
+    border-radius: 12px;
+    box-shadow: 0 4px 22px rgba(0,0,0,0.3);
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-align: center;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    display: none;
+    z-index: 2100;
+  }
+  #close-notif-btn-2 {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background: white;
+    color: #3333cc;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: none;
+    padding: 6px 15px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+  }
+  #close-notif-btn-2:hover {
+    background: #f0f0f0;
+  }
+</style>
+</head>
+<body>
+
+<div class="slider">
+  <section class="slide" id="slide1" aria-label="Slide pertama">
+    hello ketuk untuk mendapatkan profil saya
+  </section>
+
+  <section class="slide hidden" id="slide2" aria-label="Slide kedua">
+    <div id="move-text" tabindex="0" role="button" aria-label="Ketuk untuk membuka profil TikTok">
+      ketuk untuk membuka profil tiktok
+    </div>
+    <button id="back-btn" aria-label="Kembali ke slide pertama">Kembali</button>
+  </section>
+</div>
+
+<!-- Notification modal 1 -->
+<div id="notification-modal" role="alertdialog" aria-modal="true" aria-labelledby="notif-text" aria-describedby="close-notif-btn">
+  <div id="notif-text">apakah kamu ingin meninggalkan web ini</div>
+  <button id="close-notif-btn" aria-label="Tutup notifikasi">close</button>
+</div>
+
+<!-- Notification modal 2 -->
+<div id="notification-modal-2" role="alertdialog" aria-modal="true" aria-labelledby="notif2-text" aria-describedby="close-notif-btn-2">
+  <div id="notif2-text">hiyaa kena kannnn salahnya kepoooo sih kamuuu hahaa</div>
+  <button id="close-notif-btn-2" aria-label="Tutup notifikasi 2">close</button>
+</div>
+
+<script>
+  (function(){
+    // Slide elements
+    const slide1 = document.getElementById('slide1');
+    const slide2 = document.getElementById('slide2');
+    // Buttons
+    const backBtn = document.getElementById('back-btn');
+    const moveText = document.getElementById('move-text');
+    // Notification modal elements
+    const notifModal = document.getElementById('notification-modal');
+    const closeNotifBtn = document.getElementById('close-notif-btn');
+    const notifModal2 = document.getElementById('notification-modal-2');
+    const closeNotifBtn2 = document.getElementById('close-notif-btn-2');
+
+    // Show slide2 (called maybe after slide1 to slide2 navigation)
+    function showSlide(id) {
+      if(id === 'slide1') {
+        slide1.classList.remove('hidden');
+        slide2.classList.add('hidden');
+      } else if (id === 'slide2') {
+        slide2.classList.remove('hidden');
+        slide1.classList.add('hidden');
+        positionMoveTextCenter();
+      }
+    }
+
+    // Initially show slide1
+    showSlide('slide1');
+
+    // To simulate slide1->slide2 navigation: click on slide1 text triggers slide2 show
+    slide1.addEventListener('click', () => {
+      showSlide('slide2');
+    });
+    slide1.style.cursor = 'pointer';
+
+    // Move text randomizer for slide2 move-text
+
+    function getRandomPosition(element) {
+      const parent = document.documentElement;
+      const parentWidth = parent.clientWidth;
+      const parentHeight = parent.clientHeight;
+
+      const elemWidth = element.offsetWidth;
+      const elemHeight = element.offsetHeight;
+
+      const maxLeft = parentWidth - elemWidth - 10;
+      const maxTop = parentHeight - elemHeight - 10;
+
+      const left = Math.floor(Math.random() * maxLeft) + 5;
+      const top = Math.floor(Math.random() * maxTop) + 5;
+
+      return { left, top };
+    }
+
+    function moveElementRandomly() {
+      const pos = getRandomPosition(moveText);
+      moveText.style.left = pos.left + 'px';
+      moveText.style.top = pos.top + 'px';
+      moveText.style.transform = 'translate(0, 0)';
+    }
+
+    // Center move-text initially
+    function positionMoveTextCenter() {
+      moveText.style.left = '50%';
+      moveText.style.top = '50%';
+      moveText.style.transform = 'translate(-50%, -50%)';
+    }
+
+    // On click/tap on #move-text in slide2
+    moveText.addEventListener('click', () => {
+      moveElementRandomly();
+      // No link or prompt as per user request
+    });
+    moveText.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        moveText.click();
+      }
+    });
+
+    // Back button click: show notification prompt instead of immediate slide change
+    backBtn.addEventListener('click', () => {
+      notifModal.style.display = 'block';
+      startCloseBtnMoving();
+    });
+
+    // Close notif button random mover timer handle for first notification
+    let moveInterval;
+
+    function startCloseBtnMoving() {
+      if(moveInterval) clearInterval(moveInterval);
+
+      moveInterval = setInterval(() => {
+        const container = notifModal.getBoundingClientRect();
+        const btn = closeNotifBtn;
+        const btnWidth = btn.offsetWidth;
+        const btnHeight = btn.offsetHeight;
+
+        const maxX = container.width - btnWidth - 10;
+        const maxY = container.height - btnHeight - 10;
+
+        const randomX = Math.floor(Math.random() * maxX) + 5;
+        const randomY = Math.floor(Math.random() * maxY) + 5;
+
+        btn.style.left = randomX + 'px';
+        btn.style.top = randomY + 'px';
+      }, 500);
+    }
+
+    // Stop moving close button and hide notification on close click
+    closeNotifBtn.addEventListener('click', () => {
+      notifModal.style.display = 'none';
+      clearInterval(moveInterval);
+      moveInterval = null;
+      // Show second notification
+      notifModal2.style.display = 'block';
+      positionCloseBtn2Initial();
+      startCloseBtn2Evading();
+    });
+
+    // Accessibility: close notif btn keyboard access for notif 1
+    closeNotifBtn.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        closeNotifBtn.click();
+      }
+    });
+
+    /* Close button on second notif cannot be clicked successfully
+       It moves away every time user tries to click it */
+
+    let evadeMoveTimeout;
+    function positionCloseBtn2Initial() {
+      const btn = closeNotifBtn2;
+      btn.style.left = '';
+      btn.style.top = '';
+      btn.style.bottom = '15px';
+      btn.style.right = '15px';
+      btn.style.position = 'absolute';
+    }
+
+    function moveCloseBtn2Randomly() {
+      const container = notifModal2.getBoundingClientRect();
+      const btn = closeNotifBtn2;
+      const btnWidth = btn.offsetWidth;
+      const btnHeight = btn.offsetHeight;
+
+      const maxX = container.width - btnWidth - 10;
+      const maxY = container.height - btnHeight - 10;
+
+      // random positions within container
+      const randomX = Math.floor(Math.random() * maxX) + 5;
+      const randomY = Math.floor(Math.random() * maxY) + 5;
+
+      btn.style.left = randomX + 'px';
+      btn.style.top = randomY + 'px';
+      btn.style.bottom = 'auto';
+      btn.style.right = 'auto';
+      btn.style.position = 'absolute';
+    }
+
+    function startCloseBtn2Evading() {
+      closeNotifBtn2.addEventListener('mouseenter', evadeCloseBtn2);
+      closeNotifBtn2.addEventListener('mousedown', evadeCloseBtn2);
+      closeNotifBtn2.addEventListener('touchstart', evadeCloseBtn2);
+    }
+
+    function evadeCloseBtn2() {
+      if(evadeMoveTimeout) {
+        clearTimeout(evadeMoveTimeout);
+      }
+      evadeMoveTimeout = setTimeout(() => {
+        moveCloseBtn2Randomly();
+      }, 100); // quick move to frustrate user clicking
+    }
+
+    // Prevent actual close by canceling click event
+    closeNotifBtn2.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Instead of closing, move the button randomly again
+      moveCloseBtn2Randomly();
+    });
+
+    // Accessibility support: don't allow keyboard closing either, move button on keydown
+    closeNotifBtn2.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        moveCloseBtn2Randomly();
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>
+
+```
+
